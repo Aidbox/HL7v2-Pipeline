@@ -59,7 +59,19 @@ def prepare_patient(data):
         patient.gender = get_gender_by_code(patient.gender)
 
     if "address" in data:
-        patient.address = list(map(lambda item: Address(**item), data["address"]))
+        patient.address = list(
+            map(
+                lambda item: Address(
+                    use=item.get("use", "work").lower(),
+                    city=item.get("city", None),
+                    state=item.get("state", None),
+                    country=item.get("country", None),
+                    line=item.get("line", []),
+                    postalCode=item.get("postalCode", None),
+                ),
+                data["address"],
+            )
+        )
 
     if "telecom" in data:
         patient.telecom = list(map(lambda item: ContactPoint(**item), data["telecom"]))

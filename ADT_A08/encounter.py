@@ -42,8 +42,8 @@ def prepare_encounters(
 
     if "period" in data:
         encounter.period = Period(
-            start=pop_string(data["period"]["start"]),
-            end=pop_string(data["period"]["end"]),
+            start=pop_string(data["period"]["start"]) + "Z",
+            end=pop_string(data["period"]["end"]) + "Z",
         )
 
     if "indentifier" in data:

@@ -45,7 +45,7 @@ def prepare_observation(data):
     )
 
     if "effective" in data:
-        observation.effectiveDateTime = data["effective"]["dateTime"]
+        observation.effectiveDateTime = data["effective"]["dateTime"] + "Z"
 
     if "string" in data["value"]:
         observation.valueString = " ".join(data["value"]["string"])

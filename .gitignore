@@ -1,0 +1,8 @@
+*/**/__pycache__
+.env
+.clj-kondo
+.lsp
+aidbox-test
+*.json
+zen-packages
+pgdata
