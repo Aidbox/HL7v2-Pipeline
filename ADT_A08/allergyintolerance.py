@@ -1,9 +1,6 @@
 from aidbox.resource.allergyintolerance import AllergyIntolerance
 from aidbox.base import Reference, CodeableConcept, Coding
 
-# import hashlib
-# print(hashlib.md5("whatever your string is".encode('utf-8')).hexdigest())
-
 
 def get_category(code):
     match code:

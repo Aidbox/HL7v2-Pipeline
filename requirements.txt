@@ -1,0 +1,2 @@
+aidbox @ git+https://github.com/Aidbox/aidbox-python@main
+python-dotenv==1.0.0
