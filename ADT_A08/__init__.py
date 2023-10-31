@@ -17,7 +17,7 @@ def run(message):
     if "patient" in message:
         entry.append(
             {
-                "resource": patient.model_dump(exclude_unset=True),
+                "resource": patient.dumps(exclude_unset=True),
                 "request": {"method": "POST", "url": "Patient"},
             }
         )
@@ -46,7 +46,7 @@ def run(message):
         for item in data[0]:
             entry.append(
                 {
-                    "resource": item.dump(exclude_unset=True),
+                    "resource": item.dumps(exclude_unset=True),
                     "request": {"method": "PUT", "url": "Location"},
                 }
             )
@@ -54,14 +54,14 @@ def run(message):
         for item in data[1]:
             entry.append(
                 {
-                    "resource": item.dump(exclude_unset=True),
+                    "resource": item.dumps(exclude_unset=True),
                     "request": {"method": "PUT", "url": "Practitioner"},
                 }
             )
 
         entry.append(
             {
-                "resource": data[2].dump(exclude_unset=True),
+                "resource": data[2].dumps(exclude_unset=True),
                 "request": {"method": "POST", "url": "Encounter"},
             }
         )
@@ -72,14 +72,14 @@ def run(message):
 
             entry.append(
                 {
-                    "resource": data[0].dump(exclude_unset=True),
+                    "resource": data[0].dumps(exclude_unset=True),
                     "request": {"method": "PUT", "url": "Organization"},
                 }
             )
 
             entry.append(
                 {
-                    "resource": data[1].dump(exclude_unset=True),
+                    "resource": data[1].dumps(exclude_unset=True),
                     "request": {"method": "POST", "url": "Coverage"},
                 }
             )

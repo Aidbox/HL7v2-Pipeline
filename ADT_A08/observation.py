@@ -55,4 +55,4 @@ def prepare_observation(data):
             value=data["value"]["TX"], unit=data["value"]["code"]
         )
 
-    return observation.model_dump(exclude_unset=True)
+    return observation.dumps(exclude_unset=True)

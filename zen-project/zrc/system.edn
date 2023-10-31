@@ -1,5 +1,5 @@
 {:ns system
- import #{aidbox loinc trigger notification hl7-fhir-r4-core aidbox.forms awf.workflow awf.task hl7-parser}
+ import #{aidbox hl7-fhir-r4-core hl7-parser}
 
  admin-user-seed
  {:zen/tags #{aidbox/service}
@@ -11,45 +11,8 @@
    :AccessPolicy {:allow-admin-user
                   {:engine "allow"
                    :link   [{:resourceType "User" :id "admin"}]}}}}
- demo-client-seed
- {:zen/tags #{aidbox/service}
-  :engine   aidbox/seed-v2
-  :resources
-  {:Client {:demo
-            {:name        "Demo client"
-             :secret      #env AIDBOX_CLIENT_SECRET
-             :first_party true
-             :grant_types ["basic"]}}
-
-   :AccessPolicy {:allow-demo-client
-                  {:engine "allow"
-                   :link   [{:resourceType "Client" :id "demo"}]}}}}
-
- data-seed
- {:zen/tags #{aidbox/service}
-  :engine   aidbox/seed-v2
-  :resources
-  {:Patient {:03cb8799-bfbd-40fa-9ea8-96114cf1fec1
-             {:name        [{:given ["Peter" "James"]
-                             :family "Chalmers"}]}}}}
-
- seed
- {:zen/tags  #{aidbox/service}
-  :engine    aidbox/seed
-  :convert-to-aidbox-format true
-  :files     ["Condition.ndjson.gz"
-              "Encounter.ndjson.gz"
-              "Immunization.ndjson.gz"
-              "Observation.ndjson.gz"
-              "Organization.ndjson.gz"
-              "Patient.ndjson.gz"]}
 
  box
  {:zen/tags #{aidbox/system}
   :services {:admin-user-seed admin-user-seed
-             :data-seed  data-seed
-             :preload seed
-             :http hl7-parser/server
-             :demo-client-seed demo-client-seed
-             :task-service awf.task/task-service
-             :subscription-trigger-service trigger/subscription-service}}}
+             :http hl7-parser/server}}}

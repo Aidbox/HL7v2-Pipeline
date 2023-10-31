@@ -39,4 +39,4 @@ def prepare_allergies(data):
     if "type" in data:
         allergy.category = [get_category(data["type"]["code"])]
 
-    return allergy.model_dump(exclude_unset=True)
+    return allergy.dumps(exclude_unset=True)
