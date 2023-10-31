@@ -1,4 +1,4 @@
-# HL7v2 pipeline with Aidbox and Aidbox Python SDK
+# HL7v2 pipeline with Python SDK
 
 ## Install dependencies
 
