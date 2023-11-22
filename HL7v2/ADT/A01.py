@@ -1,13 +1,23 @@
-import requests
+# ADT Admission Message
+# An A01 event is sent as a result of a patient undergoing the admission process which assigns the patient to a bed.
+# It signals the beginning of a patient’s stay in a healthcare facility.
+# Normally, this information is entered in the primary Patient Administration system
+# and broadcast to the nursing units and ancillary systems.
+
+
 import json
+import requests
 
 from aidbox.base import API
 
-from ADT_A08.observation import prepare_observation
-from ADT_A08.patient import prepare_patient
-from ADT_A08.allergyintolerance import prepare_allergies
-from ADT_A08.encounter import prepare_encounters
-from ADT_A08.coverage import prepare_coverage
+from HL7v2.resources.observation import prepare_observation
+from HL7v2.resources.patient import prepare_patient
+from HL7v2.resources.allergyintolerance import prepare_allergies
+from HL7v2.resources.encounter import prepare_encounters
+from HL7v2.resources.coverage import prepare_coverage
+from HL7v2.resources.relatedperson import prepare_related_persons
+from HL7v2.resources.procedure import prepare_procedure
+from HL7v2.resources.condition import prepare_condition
 
 
 def run(message):
@@ -17,10 +27,28 @@ def run(message):
     if "patient" in message:
         entry.append(
             {
-                "resource": patient.dumps(exclude_unset=True),
+                "resource": patient.dumps(exclude_none=True, exclude_unset=True),
                 "request": {"method": "POST", "url": "Patient"},
             }
         )
+
+    if "next_of_kins" in message:
+        for item in message["next_of_kins"]:
+            entry.append(
+                {
+                    "resource": prepare_related_persons(item, patient),
+                    "request": {"method": "POST", "url": "RelatedPerson"},
+                }
+            )
+
+    if "procedures" in message:
+        for item in message["procedures"]:
+            entry.append(
+                {
+                    "resource": prepare_procedure(item, patient),
+                    "request": {"method": "POST", "url": "Procedure"},
+                }
+            )
 
     if "observations" in message:
         for item in message["observations"]:
@@ -28,6 +56,15 @@ def run(message):
                 {
                     "resource": prepare_observation(item),
                     "request": {"method": "POST", "url": "Observation"},
+                }
+            )
+
+    if "diagnosis" in message:
+        for item in message["diagnosis"]:
+            entry.append(
+                {
+                    "resource": prepare_condition(item, patient),
+                    "request": {"method": "POST", "url": "Condition"},
                 }
             )
 
@@ -86,7 +123,6 @@ def run(message):
 
     try:
         API.bundle(entry=entry, type="transaction")
-        print("done!")
     except requests.exceptions.RequestException as e:
         if e.response is not None:
             print(e.response.json())

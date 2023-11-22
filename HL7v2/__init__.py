@@ -22,7 +22,7 @@ def get_resource_id(data):
                 (
                     item
                     for item in data["patient"]["identifier"]
-                    if item["use"] == "official"
+                    if item.get("use") == "official"
                 ),
                 None,
             )

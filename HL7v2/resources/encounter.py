@@ -15,7 +15,7 @@ from aidbox.base import (
     HumanName,
 )
 
-from ADT_A08.utils import get_md5, pop_string
+from HL7v2 import get_md5, pop_string
 
 
 def get_code(type):
@@ -36,14 +36,15 @@ def prepare_encounters(
     practitioners: list[Practitioner] = []
     encounter = Encounter(
         status="finished",
-        class_=get_code(data["patient_type"]),
+        class_=get_code(data.get("patient_type", "")),
         subject=Reference(reference="Patient/" + (patient.id or "")),
     )
 
     if "period" in data:
+        period = data.get("period", {})
         encounter.period = Period(
-            start=pop_string(data["period"]["start"]) + "Z",
-            end=pop_string(data["period"]["end"]) + "Z",
+            start=pop_string(period.get("start")) + "Z",
+            end=pop_string(period.get("end")) + "Z",
         )
 
     if "indentifier" in data:

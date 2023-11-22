@@ -3,7 +3,7 @@ from aidbox.resource.patient import Patient
 from aidbox.resource.organization import Organization
 
 from aidbox.base import Reference, Period, Address, ContactPoint, Identifier
-from ADT_A08.utils import get_md5
+from HL7v2 import get_md5
 
 
 def get_contact_point(telecom):
@@ -29,7 +29,7 @@ def prepare_coverage(data, patient: Patient):
         telecom=list(
             map(
                 lambda item: get_contact_point(item),
-                (data["payor"]["contact"]["telecom"] or []),
+                (data.get("payor", {}).get("contact", {}).get("telecom") or []),
             )
         ),
     )

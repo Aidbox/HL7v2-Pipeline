@@ -1,4 +1,5 @@
 from aidbox.resource.patient import Patient, Patient_Communication
+from aidbox.resource.appointment import Appointment
 from aidbox.base import (
     HumanName,
     ContactPoint,
@@ -7,7 +8,9 @@ from aidbox.base import (
     CodeableConcept,
     Coding,
 )
-from ADT_A08.utils import get_resource_id
+
+
+from HL7v2 import get_resource_id
 
 
 def get_gender_by_code(code):
@@ -20,7 +23,7 @@ def get_gender_by_code(code):
             return "unknown"
 
 
-def get_martial_status_code(code):
+def get_marital_status_code(code):
     system = "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus"
 
     match code:
@@ -74,15 +77,20 @@ def prepare_patient(data):
         )
 
     if "telecom" in data:
-        patient.telecom = list(map(lambda item: ContactPoint(**item), data["telecom"]))
+        patient.telecom = list(
+            map(
+                lambda item: ContactPoint(**item, value=item.get("phone", "")),
+                data.get("telecom", []),
+            )
+        )
 
     if "identifier" in data:
         patient.identifier = list(
             map(lambda item: Identifier(**item), data["identifier"])
         )
 
-    if "martial_status" in data:
-        patient.maritalStatus = CodeableConcept(coding=[get_martial_status_code(data)])
+    if "marital_status" in data:
+        patient.maritalStatus = CodeableConcept(coding=[get_marital_status_code(data)])
 
     if "language" in data:
         patient.communication = [
