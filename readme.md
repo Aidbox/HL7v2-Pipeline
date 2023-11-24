@@ -1,4 +1,4 @@
-# HL7v2 pipeline with Python SDK
+# Integration pipelines with Python SDK
 
 ## Install dependencies
 
