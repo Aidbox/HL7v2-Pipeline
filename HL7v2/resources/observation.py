@@ -1,5 +1,9 @@
+from typing import Optional
 from aidbox.resource.observation import Observation
-from aidbox.base import CodeableConcept, Coding, Quantity
+from aidbox.resource.patient import Patient
+from aidbox.base import CodeableConcept, Coding, Quantity, Identifier, Reference
+
+from HL7v2 import get_md5
 
 
 def get_category(data):
@@ -37,12 +41,35 @@ def get_status(status):
             return "registered"
 
 
-def prepare_observation(data):
+def prepare_observation(data, patient: Patient, parent: Optional[Observation]):
     observation = Observation(
+        id=get_md5([]),
         status=get_status(data["status"]),
+        subject=Reference(reference="Patient/" + (patient.id or "")),
         code=CodeableConcept(coding=[get_code(data["code"])]),
         category=[CodeableConcept(coding=[get_category(data)])],
     )
+
+    if parent:
+        observation.hasMember = [
+            Reference(reference="Observation/" + (parent.id or ""))
+        ]
+
+    if data.get("identifier", {}).get("filler_number"):
+        observation.identifier.append(
+            Identifier(
+                system="filler_number",
+                value=data["identifier"]["filler_number"].get("identifier"),
+            )
+        )
+
+    if data.get("identifier", {}).get("placer_number"):
+        observation.identifier.append(
+            Identifier(
+                system="placer_number",
+                value=data["identifier"]["placer_number"].get("identifier"),
+            )
+        )
 
     if "effective" in data:
         observation.effectiveDateTime = data["effective"]["dateTime"] + "Z"
@@ -55,4 +82,4 @@ def prepare_observation(data):
             value=data["value"]["TX"], unit=data["value"]["code"]
         )
 
-    return observation.dumps(exclude_unset=True)
+    return observation

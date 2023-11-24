@@ -5,7 +5,6 @@
 # and broadcast to the nursing units and ancillary systems.
 
 
-import json
 import requests
 
 from aidbox.base import API
@@ -21,6 +20,7 @@ from HL7v2.resources.condition import prepare_condition
 
 
 def run(message):
+    message = message.get("patient_group", {})
     entry = []
     patient = prepare_patient(message["patient"])
 
@@ -54,7 +54,9 @@ def run(message):
         for item in message["observations"]:
             entry.append(
                 {
-                    "resource": prepare_observation(item),
+                    "resource": prepare_observation(item, patient, parent=None).dumps(
+                        exclude_unset=True
+                    ),
                     "request": {"method": "POST", "url": "Observation"},
                 }
             )

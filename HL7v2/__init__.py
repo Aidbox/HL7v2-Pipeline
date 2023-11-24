@@ -1,8 +1,14 @@
 import hashlib
 
 
-def get_md5(strings: list[str]):
-    return hashlib.md5("".join(strings).encode("utf-8")).hexdigest()
+def get_md5(strings: list[str | None]):
+    data: list[str] = []
+
+    for s in strings:
+        if s is not None:
+            data.append(s)
+
+    return hashlib.md5("".join(data).encode("utf-8")).hexdigest()
 
 
 def pop_string(data: list[str] | str | None):
