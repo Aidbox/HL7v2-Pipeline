@@ -9,6 +9,7 @@ from aidbox.base import API
 
 from HL7v2.ADT import A01, A02, A03, A04, A08
 from HL7v2.ORU import R01
+from HL7v2.ORM import O01
 
 import json
 import requests
@@ -51,23 +52,26 @@ def request_wrapper(self, action):
 
 class HL7v2(SimpleHTTPRequestHandler):
     def do_POST(self):
-        if self.path == "/HL7v2/ADT_AO1":
+        if self.path == "/HL7v2/ADT_A01":
             request_wrapper(self, A01.run)
 
-        if self.path == "/HL7v2/ADT_AO2":
+        if self.path == "/HL7v2/ADT_A02":
             request_wrapper(self, A02.run)
 
-        if self.path == "/HL7v2/ADT_AO3":
+        if self.path == "/HL7v2/ADT_A03":
             request_wrapper(self, A03.run)
 
-        if self.path == "/HL7v2/ADT_AO3":
+        if self.path == "/HL7v2/ADT_A03":
             request_wrapper(self, A04.run)
 
-        if self.path == "/HL7v2/ADT_AO3":
+        if self.path == "/HL7v2/ADT_A03":
             request_wrapper(self, A04.run)
 
         if self.path == "/HL7v2/ORU_R01":
             request_wrapper(self, R01.run)
+
+        if self.path == "/HL7v2/ORM_O01":
+            request_wrapper(self, O01.run)
 
 
 if __name__ == "__main__":

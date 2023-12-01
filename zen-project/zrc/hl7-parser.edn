@@ -9,7 +9,8 @@
  api
  {:zen/tags #{aidbox.rest/api}
   "hl7in" {"ADT" {:POST message-in}
-           "ORU" {:POST message-in}}}
+           "ORU" {:POST message-in}
+           "ORM" {:POST message-in}}}
 
  server
  {:zen/tags #{aidbox/service}

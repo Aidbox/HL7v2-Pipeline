@@ -1,4 +1,5 @@
-from typing import Optional
+from typing import Optional, Union
+from aidbox.resource.servicerequest import ServiceRequest
 from aidbox.resource.observation import Observation
 from aidbox.resource.patient import Patient
 from aidbox.base import CodeableConcept, Coding, Quantity, Identifier, Reference
@@ -41,7 +42,9 @@ def get_status(status):
             return "registered"
 
 
-def prepare_observation(data, patient: Patient, parent: Optional[Observation]):
+def prepare_observation(
+    data, patient: Patient, parent: Optional[Union[Observation, ServiceRequest]]
+):
     observation = Observation(
         id=get_md5([]),
         status=get_status(data["status"]),
@@ -51,8 +54,9 @@ def prepare_observation(data, patient: Patient, parent: Optional[Observation]):
     )
 
     if parent:
+        resourceType = parent.__class__.__name__
         observation.hasMember = [
-            Reference(reference="Observation/" + (parent.id or ""))
+            Reference(reference=resourceType + "/" + (parent.id or ""))
         ]
 
     if data.get("identifier", {}).get("filler_number"):
