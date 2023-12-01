@@ -11,7 +11,7 @@ def prepare_procedure(data, patient: Patient):
     )
 
     if "procedure_datetime" in data:
-        procedure.performedDateTime = data["procedure_datetime"]
+        procedure.performedDateTime = data["procedure_datetime"] + "Z"
 
     if "procedure_code" in data:
         code = data.get("procedure_code", {})

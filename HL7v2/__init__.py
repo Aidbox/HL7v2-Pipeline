@@ -1,8 +1,17 @@
 import hashlib
+import random, string, hashlib, argparse, sys
+
+
+def random_md5():
+    random_string = "".join(random.choices(string.ascii_letters + string.digits, k=10))
+    return hashlib.md5(random_string.encode()).hexdigest()
 
 
 def get_md5(strings: list[str | None]):
     data: list[str] = []
+
+    if len(strings) == 0:
+        return random_md5()
 
     for s in strings:
         if s is not None:

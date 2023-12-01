@@ -79,7 +79,7 @@ def prepare_patient(data):
     if "telecom" in data:
         patient.telecom = list(
             map(
-                lambda item: ContactPoint(**item, value=item.get("phone", "")),
+                lambda item: ContactPoint(use="home", value=item.get("phone", "")),
                 data.get("telecom", []),
             )
         )

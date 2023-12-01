@@ -53,6 +53,8 @@ def prepare_observation(
         category=[CodeableConcept(coding=[get_category(data)])],
     )
 
+    print(observation.id)
+
     if parent:
         resourceType = parent.__class__.__name__
         observation.hasMember = [
