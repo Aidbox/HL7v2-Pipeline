@@ -25,11 +25,11 @@ def run(message):
     entry = []
     patient = prepare_patient(patient_group["patient"])
 
-    if "patient" in message:
+    if "patient" in patient_group:
         entry.append(
             {
                 "resource": patient.dumps(exclude_none=True, exclude_unset=True),
-                "request": {"method": "POST", "url": "Patient"},
+                "request": {"method": "PUT", "url": "Patient"},
             }
         )
 
@@ -156,6 +156,8 @@ def run(message):
                 "request": {"method": "PUT", "url": "Observation"},
             }
         )
+
+    print(entry)
 
     try:
         API.bundle(entry=entry, type="transaction")

@@ -7,10 +7,10 @@ def random_md5():
     return hashlib.md5(random_string.encode()).hexdigest()
 
 
-def get_md5(strings: list[str | None]):
+def get_md5(strings: list[str | None] = []):
     data: list[str] = []
 
-    if len(strings) == 0:
+    if len(strings) == 0 or all(element is None for element in strings):
         return random_md5()
 
     for s in strings:

@@ -9,7 +9,6 @@ from aidbox.base import (
     Coding,
 )
 
-
 from HL7v2 import get_resource_id
 
 

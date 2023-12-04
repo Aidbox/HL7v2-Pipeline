@@ -67,7 +67,9 @@ def prepare_encounters(
             map(
                 lambda item: Location(
                     status=item["status"],
-                    id=get_md5([item["facility"], item["point_of_care"]]),
+                    id=get_md5(
+                        [item.get("facility", ""), item.get("point_of_care", "")]
+                    ),
                 ),
                 data["location"],
             )
@@ -83,16 +85,28 @@ def prepare_encounters(
         )
 
     if "participant" in data:
-        practitioners = list(
-            map(
-                lambda item: Practitioner(
-                    id=get_md5([item["identifier"]["value"]]),
-                    name=[HumanName(**item["name"])],
-                    identifier=[Identifier(id=item["identifier"]["value"])],
-                ),
-                data["participant"],
+        for participant in data["participant"]:
+            data_name = participant.get("name", {})
+            name = HumanName()
+            identifier = participant.get("identifier", {}).get("value", None)
+            practitioner = Practitioner(
+                id=get_md5([participant.get("identifier", {}).get("value", None)]),
+                name=[name],
             )
-        )
+
+            if "given" in data_name:
+                name.given = data_name["given"]
+
+            if "family" in data_name:
+                name.family = data_name["family"]
+
+            if "prefix" in data_name:
+                name.prefix = [data_name["prefix"]]
+
+            if identifier is not None:
+                practitioner.identifier = [Identifier(value=identifier)]
+
+            practitioners.append(practitioner)
 
         encounter.participant = list(
             map(

@@ -18,7 +18,7 @@ def run(message):
     entry = []
     patient = prepare_patient(patient_data["patient"])
 
-    if "patient" in message:
+    if "patient" in patient_data:
         entry.append(
             {
                 "resource": patient.dumps(exclude_none=True, exclude_unset=True),

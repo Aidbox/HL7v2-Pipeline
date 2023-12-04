@@ -62,11 +62,11 @@ class HL7v2(SimpleHTTPRequestHandler):
         if self.path == "/HL7v2/ADT_A03":
             request_wrapper(self, A03.run)
 
-        if self.path == "/HL7v2/ADT_A03":
+        if self.path == "/HL7v2/ADT_A04":
             request_wrapper(self, A04.run)
 
-        if self.path == "/HL7v2/ADT_A03":
-            request_wrapper(self, A04.run)
+        if self.path == "/HL7v2/ADT_A08":
+            request_wrapper(self, A08.run)
 
         if self.path == "/HL7v2/ORU_R01":
             request_wrapper(self, R01.run)

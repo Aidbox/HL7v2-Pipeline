@@ -46,14 +46,12 @@ def prepare_observation(
     data, patient: Patient, parent: Optional[Union[Observation, ServiceRequest]]
 ):
     observation = Observation(
-        id=get_md5([]),
+        id=get_md5(),
         status=get_status(data["status"]),
         subject=Reference(reference="Patient/" + (patient.id or "")),
         code=CodeableConcept(coding=[get_code(data["code"])]),
         category=[CodeableConcept(coding=[get_category(data)])],
     )
-
-    print(observation.id)
 
     if parent:
         resourceType = parent.__class__.__name__
