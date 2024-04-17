@@ -33,7 +33,7 @@ def request_wrapper(self, action):
         self.end_headers()
 
         parsed_data = convert_message(post_data)
-        print(parsed_data.keys())
+        
         action(parsed_data["parsed"]["parsed"])
 
         response = json.dumps({"message": "DONE"})
