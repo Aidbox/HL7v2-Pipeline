@@ -7,6 +7,8 @@ from aidbox.base import (
     Identifier,
     CodeableConcept,
     Coding,
+    Extension,
+    Meta,
 )
 
 from HL7v2 import get_resource_id
@@ -58,7 +60,7 @@ def prepare_patient(data):
         patient.birthDate = data["birthDate"]
 
     if "gender" in data:
-        patient.gender = get_gender_by_code(patient.gender)
+        patient.gender = get_gender_by_code(data["gender"])
 
     if "address" in data:
         patient.address = list(
@@ -99,5 +101,64 @@ def prepare_patient(data):
                 )
             )
         ]
+
+    if ("race" in data) or ("ethnicity" in data):
+        patient.meta = Meta(
+            profile = ["http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient"]
+        )
+
+        patient.extension = []
+
+    if "race" in data:
+        race_extension = Extension(
+            extension = list(
+                map(
+                    lambda race: Extension(
+                        url = "detailed",
+                        valueCoding = Coding(
+                            system = race["system"],
+                            code = race["code"],
+                            display = race["display"],
+                        )
+                    ),
+                    data["race"]
+                )
+            ),
+
+            url = "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race"
+        )
+
+        race_extension.extension.append(Extension(
+            url = "text",
+            valueString = race_extension.extension[0].valueCoding.display
+        ))
+
+        patient.extension.append(race_extension)
+
+    if "ethnicity" in data:
+        ethnicity_extension = Extension(
+            extension = list(
+                map(
+                    lambda ethnicity: Extension(
+                        url = "detailed",
+                        valueCoding = Coding(
+                            system = ethnicity["system"],
+                            code = ethnicity["code"],
+                            display = ethnicity["display"],
+                        )
+                    ),
+                    data["ethnicity"]
+                )
+            ),
+
+            url = "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity"
+        )
+
+        ethnicity_extension.extension.append(Extension(
+            url = "text",
+            valueString = ethnicity_extension.extension[0].valueCoding.display
+        ))
+        
+        patient.extension.append(ethnicity_extension)
 
     return patient

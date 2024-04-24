@@ -17,15 +17,70 @@ from aidbox.base import (
 
 from HL7v2 import get_md5, pop_string
 
-
 def get_code(type):
+    if type == "O":
+        return Coding(
+            system = "http://terminology.hl7.org/ValueSet/v3-ActEncounterCode",
+            code = "AMB",
+        )
+
+    if type == "E":
+        return Coding(
+            system = "http://terminology.hl7.org/ValueSet/v3-ActEncounterCode",
+            code = "EMER",
+        )
+
+    if type == "I":
+        return Coding(
+            system = "http://terminology.hl7.org/ValueSet/v3-ActEncounterCode",
+            code = "IMP",
+        )
+
+    if type == "P":
+        return Coding(
+            system = "http://terminology.hl7.org/ValueSet/v3-ActEncounterCode",
+            code = "PRENC",
+        )
+
+    if type == "R":
+        return Coding(
+            system = "http://terminology.hl7.org/CodeSystem/v2-0004",
+            code = "R",
+        )
+
+    if type == "B":
+        return Coding(
+            system = "http://terminology.hl7.org/CodeSystem/v2-0004",
+            code = "B",
+        )
+
+    if type == "C":
+        return Coding(
+            system = "http://terminology.hl7.org/CodeSystem/v2-0004",
+            code = "C",
+        )
+
+    if type == "N":
+        return Coding(
+            system = "http://terminology.hl7.org/CodeSystem/v2-0004",
+            code = "N",
+        )
+
+    if type == "U":
+        return Coding(
+            system = "http://terminology.hl7.org/CodeSystem/v2-0004",
+            code = "U",
+        )
+
     if type == "Clinic":
         return Coding(
-            code="IMP", system="http://terminology.hl7.org/ValueSet/v3-ActEncounterCode"
+            system = "http://terminology.hl7.org/ValueSet/v3-ActEncounterCode",
+            code = "IMP",
         )
 
     return Coding(
-        code="NONAC", system="http://terminology.hl7.org/ValueSet/v3-ActEncounterCode"
+        system = "http://terminology.hl7.org/ValueSet/v3-ActEncounterCode",
+        code = "NONAC"
     )
 
 
@@ -36,7 +91,7 @@ def prepare_encounters(
     practitioners: list[Practitioner] = []
     encounter = Encounter(
         status="finished",
-        class_=get_code(data.get("patient_type", "")),
+        class_=get_code(data.get("patient_type", "") or data.get("class", {}).get("code", "")),
         subject=Reference(reference="Patient/" + (patient.id or "")),
     )
 

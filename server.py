@@ -10,6 +10,7 @@ from aidbox.base import API
 from HL7v2.ADT import A01, A02, A03, A04, A08
 from HL7v2.ORU import R01
 from HL7v2.ORM import O01
+from HL7v2.VXU import V04
 
 import json
 import requests
@@ -33,7 +34,7 @@ def request_wrapper(self, action):
         self.end_headers()
 
         parsed_data = convert_message(post_data)
-        
+
         action(parsed_data["parsed"]["parsed"])
 
         response = json.dumps({"message": "DONE"})
@@ -73,6 +74,9 @@ class HL7v2(SimpleHTTPRequestHandler):
 
         if self.path == "/HL7v2/ORM_O01":
             request_wrapper(self, O01.run)
+
+        if self.path == "/HL7v2/VXU_V04":
+            request_wrapper(self, V04.run)
 
 
 if __name__ == "__main__":
