@@ -1,3 +1,5 @@
+import datetime
+
 from aidbox.resource.immunization import (
     Immunization,
     Immunization_ProtocolApplied,
@@ -29,6 +31,11 @@ def prepare_immunization(data, patient: Patient) -> Immunization:
         )
     )
 
+    if "datetime_start_of_administration" in data:
+        immunization.occurrenceDateTime = data["datetime_start_of_administration"] + "Z"
+    else:
+        immunization.occurrenceDateTime = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
+
     if "administration_site" in data:
         immunization.site = CodeableConcept(
             coding = [
@@ -39,9 +46,6 @@ def prepare_immunization(data, patient: Patient) -> Immunization:
                 )
             ]
         )
-
-    if "datetime_start_of_administration" in data:
-        immunization.occurrenceDateTime = data["datetime_start_of_administration"] + "Z"
         
     if "substance_lot_number" in data:
         immunization.lotNumber = data["substance_lot_number"]
