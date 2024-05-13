@@ -15,19 +15,26 @@ from aidbox.base import (
 )
 
 def prepare_immunization(data, patient: Patient) -> Immunization:
+    vaccineCoding = [Coding(
+        system = data["administered_code"]["system"],
+        code = data["administered_code"]["code"],
+        display = data["administered_code"]["display"]
+    )] 
+
+    if (("alternate_system" in data["administered_code"]) or ("alternate_code" in data["administered_code"]) or ("alternate_display" in data["administered_code"])):
+        vaccineCoding.append(Coding(
+            system = data["administered_code"].get("alternate_system", None),
+            code = data["administered_code"].get("alternate_code", None),
+            display = data["administered_code"].get("alternate_display", None)
+        ))
+
     immunization = Immunization(
         status = "completed",
         patient = Reference(
             reference = "Patient/" + (patient.id or "")
         ),
         vaccineCode = CodeableConcept(
-            coding = [
-                Coding(
-                    system = data["administered_code"]["system"],
-                    code = data["administered_code"]["code"],
-                    display = data["administered_code"]["display"]
-                )
-            ]
+            coding = vaccineCoding
         )
     )
 
@@ -82,5 +89,14 @@ def prepare_immunization(data, patient: Patient) -> Immunization:
 
     if "substance_expiration_date" in data:
         immunization.expirationDate = data["substance_expiration_date"]
+
+    if "administration_notes" in data:
+        immunization.reportOrigin = CodeableConcept(
+            coding = [Coding(
+                system = data["administration_notes"].get("system", None),
+                code = data["administration_notes"].get("code", None),
+                display = data["administration_notes"].get("display", None)
+            )]
+        )
 
     return immunization
