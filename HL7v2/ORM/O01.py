@@ -141,8 +141,8 @@ def run(message):
                 entry.append(
                     {
                         "resource": prepare_observation(
-                            data=observation, parent=request, patient=patient
-                        ).dumps(exclude_unset=True, exclude_none=True),
+                            data=observation, parent=request, patient=patient, specimen=None, encounter=None
+                        )[0].dumps(exclude_unset=True, exclude_none=True),
                         "request": {"method": "PUT", "url": "Observation"},
                     }
                 )
@@ -151,8 +151,8 @@ def run(message):
         entry.append(
             {
                 "resource": prepare_observation(
-                    data=observation, parent=None, patient=patient
-                ).dumps(exclude_unset=True, exclude_none=True),
+                    data=observation, parent=None, patient=patient, specimen=None, encounter=None
+                )[0].dumps(exclude_unset=True, exclude_none=True),
                 "request": {"method": "PUT", "url": "Observation"},
             }
         )

@@ -1,6 +1,9 @@
 import requests
 
-from aidbox.base import API
+from aidbox.base import (
+    API,
+    Reference
+)
 
 from HL7v2.resources.observation import prepare_observation
 from HL7v2.resources.patient import prepare_patient
@@ -10,7 +13,7 @@ from HL7v2.resources.coverage import prepare_coverage
 from HL7v2.resources.relatedperson import prepare_related_persons
 from HL7v2.resources.procedure import prepare_procedure
 from HL7v2.resources.condition import prepare_condition
-
+from HL7v2.resources.diagnosticreport import prepare_diagnostic_report
 
 def run(message):
     patient_data = message.get("patient_group")
@@ -27,50 +30,113 @@ def run(message):
         )
 
     if "visit" in patient_data:
-        data = prepare_encounters(patient_data["visit"], patient=patient)
+        locations, practitioners, encounter = prepare_encounters(patient_data, patient=patient)
 
-        for item in data[0]:
+        for location in locations:
             entry.append(
                 {
-                    "resource": item.dumps(exclude_unset=True),
+                    "resource": location.dumps(exclude_unset=True, exclude_none=True),
                     "request": {"method": "PUT", "url": "Location"},
                 }
             )
 
-        for item in data[1]:
+        for practitioner in practitioners:
             entry.append(
                 {
-                    "resource": item.dumps(exclude_unset=True),
+                    "resource": practitioner.dumps(exclude_unset=True, exclude_none=True),
                     "request": {"method": "PUT", "url": "Practitioner"},
                 }
             )
 
         entry.append(
             {
-                "resource": data[2].dumps(exclude_unset=True),
+                "resource": encounter.dumps(exclude_unset=True, exclude_none=True),
                 "request": {"method": "PUT", "url": "Encounter"},
             }
         )
 
-    for item in observation_data:
-        observation = prepare_observation(item, patient, parent=None)
-        entry.append(
-            {
-                "resource": observation.dumps(exclude_unset=True),
-                "request": {"method": "PUT", "url": "Observation"},
-            }
-        )
+    for order_group_data in patient_data["order_group"]:
+        if "order" in order_group_data:
+            main_diagnostic_report, practitioner_roles, observations = prepare_diagnostic_report(order_group_data["order"], patient, encounter=None, parent=None)
 
-        if item.get("observations"):
-            for item in item["observations"]:
-                entry.append(
-                    {
-                        "resource": prepare_observation(
-                            item, patient, parent=observation
-                        ),
-                        "request": {"method": "PUT", "url": "Observation"},
-                    }
-                )
+            for practitioner_role in practitioner_roles:
+                entry.append({
+                    "resource": practitioner_role.dumps(exclude_unset=True, exclude_none=True),
+                    "request": {"method": "PUT", "url": "PractitionerRole/" + practitioner_role.id}
+                })
+
+            for observation in observations:
+                entry.append({
+                    "resource": observation.dumps(exclude_unset=True, exclude_none=True),
+                    "request": {"method": "PUT", "url": "Observation/" + observation.id}
+                })
+
+            entry.append({
+                "resource": main_diagnostic_report.dumps(exclude_unset=True, exclude_none=True),
+                "request": {"method": "PUT", "url": "DiagnosticReport/" + main_diagnostic_report.id}
+            })
+
+        for observation_data in order_group_data["observations"]:
+            observation, organizations, practitioner_roles = prepare_observation(observation_data, patient, parent = None, specimen=None, encounter=None)
+
+            entry.append({
+                "resource": observation.dumps(exclude_unset=True, exclude_none=True),
+                "request": {"method": "PUT", "url": "Observation/" + observation.id}
+            })
+
+            for organization in organizations:
+                entry.append({
+                    "resource": organization.dumps(exclude_unset=True, exclude_none=True),
+                    "request": {"method": "PUT", "url": "Organization/" + organization.id}
+                })
+
+            for practitioner_role in practitioner_roles:
+                entry.append({
+                    "resource": practitioner_role.dumps(exclude_unset=True, exclude_none=True),
+                    "request": {"method": "PUT", "url": "PractitionerRole/" + practitioner_role.id}
+                })
+
+        for observation_request_data in order_group_data["observation_requests"]:
+            diagnostic_report, practitioner_roles, observations = prepare_diagnostic_report(observation_request_data, patient, encounter=encounter, parent=main_diagnostic_report)
+
+            for practitioner_role in practitioner_roles:
+                entry.append({
+                    "resource": practitioner_role.dumps(exclude_unset=True, exclude_none=True),
+                    "request": {"method": "PUT", "url": "PractitionerRole/" + practitioner_role.id}
+                })
+
+            for observation in observations:
+                entry.append({
+                    "resource": observation.dumps(exclude_unset=True, exclude_none=True),
+                    "request": {"method": "PUT", "url": "Observation/" + observation.id}
+                })
+
+            for observation_data in observation_request_data.get("observations", []):
+                observation, organizations, practitioner_roles = prepare_observation(observation_data, patient, parent = None, specimen=None, encounter=encounter)
+
+                diagnostic_report.result.append(Reference(reference="Observation/" + observation.id))
+
+                entry.append({
+                    "resource": observation.dumps(exclude_unset=True, exclude_none=True),
+                    "request": {"method": "PUT", "url": "Observation/" + observation.id}
+                })
+
+                for organization in organizations:
+                    entry.append({
+                        "resource": organization.dumps(exclude_unset=True, exclude_none=True),
+                        "request": {"method": "PUT", "url": "Organization/" + organization.id}
+                    })
+
+                for practitioner_role in practitioner_roles:
+                    entry.append({
+                        "resource": practitioner_role.dumps(exclude_unset=True, exclude_none=True),
+                        "request": {"method": "PUT", "url": "PractitionerRole/" + practitioner_role.id}
+                    })
+
+            entry.append({
+                "resource": diagnostic_report.dumps(exclude_unset=True, exclude_none=True),
+                "request": {"method": "PUT", "url": "DiagnosticReport/" + diagnostic_report.id}
+            })
 
     try:
         API.bundle(entry=entry, type="transaction")

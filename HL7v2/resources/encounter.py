@@ -16,6 +16,7 @@ from aidbox.base import (
 )
 
 from HL7v2 import get_md5, pop_string
+from HL7v2.resources.utils import convert_datetime_to_utc
 
 def get_code(type):
     if type == "O":
@@ -83,41 +84,50 @@ def get_code(type):
         code = "NONAC"
     )
 
+def get_use(use):
+    match use:
+        case "L":
+            return "official"
+        case _:
+            return None
 
 def prepare_encounters(
     data, patient: Patient
 ) -> tuple[list[Location], list[Practitioner], Encounter]:
+    visit_data = data["visit"]
+    patient_data = data["patient"]
+
     locations: list[Location] = []
     practitioners: list[Practitioner] = []
     encounter = Encounter(
+        id=get_md5(),
         status="finished",
-        class_=get_code(data.get("patient_type", "") or data.get("class", {}).get("code", "")),
+        class_=get_code(visit_data.get("patient_type", "") or visit_data.get("class", {}).get("code", "")),
         subject=Reference(reference="Patient/" + (patient.id or "")),
     )
 
-    if "period" in data:
-        period = data.get("period", {})
+    if "period" in visit_data:
+        period = visit_data.get("period", {})
         encounter.period = Period()
         start = pop_string(period.get("start"))
         end = pop_string(period.get("end"))
 
         if start:
-            encounter.period.start = start + "Z"
+            encounter.period.start = convert_datetime_to_utc(start)
         if end:
-            encounter.period.end = start + "Z"
+            encounter.period.end = convert_datetime_to_utc(end)
 
-    if "indentifier" in data:
-        for item in data["identifier"]:
-            encounter.identifier.append(
-                Identifier(system=item["system"], value=item["value"])
-            )
+    if "identifier" in visit_data:
+        patient_identifier = patient_data.get("account", {}).get("identifier", {})
 
-    if "reason" in data:
+        encounter.identifier = list(map(lambda item: Identifier(system=item["system"], value=(patient_identifier.get("value", None) or item["value"])), visit_data["identifier"]))
+
+    if "reason" in visit_data:
         encounter.reasonCode = [
-            CodeableConcept(coding=[Coding(code=data["reason"]["code"])])
+            CodeableConcept(coding=[Coding(code=visit_data["reason"]["code"])])
         ]
 
-    if "location" in data:
+    if "location" in visit_data:
         locations = list(
             map(
                 lambda item: Location(
@@ -125,8 +135,9 @@ def prepare_encounters(
                     id=get_md5(
                         [item.get("facility", ""), item.get("point_of_care", "")]
                     ),
+                    description = item.get("location_description", None)
                 ),
-                data["location"],
+                visit_data["location"],
             )
         )
 
@@ -139,11 +150,10 @@ def prepare_encounters(
             )
         )
 
-    if "participant" in data:
-        for participant in data["participant"]:
+    if "participant" in visit_data:
+        for participant in visit_data["participant"]:
             data_name = participant.get("name", {})
             name = HumanName()
-            identifier = participant.get("identifier", {}).get("value", None)
             practitioner = Practitioner(
                 id=get_md5([participant.get("identifier", {}).get("value", None)]),
                 name=[name],
@@ -158,8 +168,13 @@ def prepare_encounters(
             if "prefix" in data_name:
                 name.prefix = [data_name["prefix"]]
 
-            if identifier is not None:
-                practitioner.identifier = [Identifier(value=identifier)]
+            if "use" in data_name:
+                name.use = get_use(data_name["use"])
+
+            if "identifier" in participant:
+                identifier_value = participant["identifier"].get("value", None)
+                identifier_system = participant["identifier"].get("system", None)
+                practitioner.identifier = [Identifier(system=identifier_system, value=identifier_value)]
 
             practitioners.append(practitioner)
 

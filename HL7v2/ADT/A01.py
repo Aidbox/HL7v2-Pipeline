@@ -54,7 +54,7 @@ def run(message):
         for item in message["observations"]:
             entry.append(
                 {
-                    "resource": prepare_observation(item, patient, parent=None).dumps(
+                    "resource": prepare_observation(item, patient, parent=None, specimen=None, encounter=None)[0].dumps(
                         exclude_unset=True
                     ),
                     "request": {"method": "POST", "url": "Observation"},

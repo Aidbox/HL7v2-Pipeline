@@ -17,7 +17,7 @@ import requests
 
 
 def convert_message(message):
-    response = API.request(
+    response = API.do_request(
         endpoint="/hl7in/ADT", method="POST", json={"message": message}
     )
     response.raise_for_status()
