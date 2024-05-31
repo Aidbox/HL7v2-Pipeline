@@ -88,6 +88,7 @@ def prepare_observation(
         subject=Reference(reference="Patient/" + (patient.id or "")),
         code=CodeableConcept(coding=get_codes(data["code"])),
         category=[CodeableConcept(coding=[get_category(data)])],
+        identifier=[]
     )
 
     if parent:

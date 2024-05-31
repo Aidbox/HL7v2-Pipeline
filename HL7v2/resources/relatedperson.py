@@ -56,7 +56,10 @@ def get_language_by_code(code):
 
 
 def prepare_related_persons(data, patient: Patient):
-    person = RelatedPerson(patient=Reference(reference="Patient/" + (patient.id or "")))
+    person = RelatedPerson(
+        patient=Reference(reference="Patient/" + (patient.id or "")),
+        relationship=[]
+    )
 
     if "name" in data:
         person.name = list(map(lambda item: HumanName(**item), data["name"]))

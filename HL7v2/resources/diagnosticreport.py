@@ -40,7 +40,8 @@ def prepare_diagnostic_report(data, patient: Patient, encounter: Encounter, pare
     diagnostic_report = parent or DiagnosticReport(
         id=get_md5(),
         status=get_status(data.get("status", {}).get("code")),
-        code=CodeableConcept(coding=[])
+        code=CodeableConcept(coding=[]),
+        result=[]
     )
 
     if (parent is None) and ("identifier" in data):

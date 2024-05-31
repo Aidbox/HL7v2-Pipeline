@@ -72,6 +72,7 @@ def run(message):
             status="active",
             subject=Reference(reference="Patient/" + (patient.id or "")),
             intent="order",
+            identifier=[]
         )
 
         if requisitions[0]:
@@ -156,8 +157,6 @@ def run(message):
                 "request": {"method": "PUT", "url": "Observation"},
             }
         )
-
-    print(entry)
 
     try:
         API.bundle(entry=entry, type="transaction")
