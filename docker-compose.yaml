@@ -2,7 +2,7 @@ version: '3.7'
 services:
   aidbox-db:
     image: "${PGIMAGE}"
-    pull_policy: always
+    
     ports:
       - "${PGHOSTPORT}:5432"
     volumes:
@@ -14,7 +14,7 @@ services:
 
   aidbox:
     image: "${AIDBOX_IMAGE}"
-    pull_policy: always
+  
     depends_on: ["aidbox-db"]
     links:
       - "aidbox-db:database"

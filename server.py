@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from os.path import join, dirname
+from datetime import datetime
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 
 dotenv_path = join(dirname(__file__), ".env")
@@ -14,6 +15,39 @@ from HL7v2.VXU import V04
 
 import json
 import requests
+import time
+
+def worker(interval):
+    timestamp = datetime.now().replace(microsecond=0).isoformat()
+    print(f"[{timestamp}]: mapping HL7v2 service has started.")
+    while True:
+        try:
+            response = API.request(endpoint="/Hl7v2Message?.status=error&_count=1")
+            
+            if response.status_code == 200:
+                data = response.json()
+                process_data(data)
+                API.request(endpoint="/Hl7v2Message?.status=error&_count=1", method="PATCH", json={"status": "processed"})
+        
+        except Exception as e:
+            if f"{e}" != "list index out of range": 
+                print(f"Error: {e}")
+        
+        time.sleep(interval)
+
+def process_data(data):
+    message = data['entry'][0]
+
+    if message is None: return
+
+    if message['resource']['type'] == 'ADT':
+        if message['resource']['event'] == 'A01':
+            A01.run(message['resource']["parsed"]["parsed"])
+
+        if message['resource']['event'] == 'A08':
+            A08.run(message['resource']["parsed"]["parsed"])
+
+worker(10)
 
 
 def convert_message(message):

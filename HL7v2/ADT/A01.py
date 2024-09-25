@@ -6,7 +6,7 @@
 
 
 import requests
-
+from datetime import datetime
 from aidbox.base import API
 
 from HL7v2.resources.observation import prepare_observation
@@ -28,7 +28,7 @@ def run(message):
         entry.append(
             {
                 "resource": patient.dumps(exclude_none=True, exclude_unset=True),
-                "request": {"method": "POST", "url": "Patient"},
+                "request": {"method": "PUT", "url": f"Patient/{patient.id}"},
             }
         )
 
@@ -37,7 +37,7 @@ def run(message):
             entry.append(
                 {
                     "resource": prepare_related_persons(item, patient),
-                    "request": {"method": "POST", "url": "RelatedPerson"},
+                    "request": {"method": "PUT", "url": "RelatedPerson"},
                 }
             )
 
@@ -46,7 +46,7 @@ def run(message):
             entry.append(
                 {
                     "resource": prepare_procedure(item, patient),
-                    "request": {"method": "POST", "url": "Procedure"},
+                    "request": {"method": "PUT", "url": "Procedure"},
                 }
             )
 
@@ -86,7 +86,7 @@ def run(message):
             entry.append(
                 {
                     "resource": item.dumps(exclude_unset=True),
-                    "request": {"method": "PUT", "url": "Location"},
+                    "request": {"method": "PUT", "url": f"Location/{item}"},
                 }
             )
 
@@ -94,7 +94,7 @@ def run(message):
             entry.append(
                 {
                     "resource": item.dumps(exclude_unset=True),
-                    "request": {"method": "PUT", "url": "Practitioner"},
+                    "request": {"method": "PUT", "url": f"Practitioner/{item}"},
                 }
             )
 
@@ -125,6 +125,9 @@ def run(message):
 
     try:
         API.bundle(entry=entry, type="transaction")
+        
+        timestamp = datetime.now().replace(microsecond=0).isoformat()
+        print(f"[{timestamp}]: incoming message ADT-A01: transformed to FHIR and uploaded to Aidbox successfully.")
     except requests.exceptions.RequestException as e:
         if e.response is not None:
             print(e.response.json())
